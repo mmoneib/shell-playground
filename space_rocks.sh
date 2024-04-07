@@ -14,6 +14,7 @@ stty -echoctl
 ## Configuration
 difficulty=5 # From 1 to 5
 planeChar="█"
+plane=( "   $planeChar   " "  $planeChar$planeChar$planeChar  " "$planeChar$planeChar $planeChar $planeChar$planeChar" " $planeChar $planeChar $planeChar " )
 rockChar="▓"
 spaceChar=" "
 ## Traps
@@ -46,12 +47,12 @@ for (( p=0; p<$numOfPixels; p++ )); do
 done
 # SPLASH
 splashLines=(" SSSS PPPP   AAA   CCCC EEEEE       RRRR   OOO   CCCC K   K  SSSS"
-            "S     P   P A   A C     E           R   R O   O C     K  K  S    "
-            "SSSSS PPPP  AAAAA C     EEEE        RRRR  O   O C     KKK   SSSSS"
-            "    S P     A   A C     E           R   R O   O C     K  K      S"
-            "SSSS  P     A   A  CCCC EEEEE       R   R  OOO   CCCC K   K SSSS "
-            "                                                                 "
-            "            M  u  h  a  m  m  a  d   M  o  n  e  i  b            ")
+             "S     P   P A   A C     E           R   R O   O C     K  K  S    "
+             "SSSSS PPPP  AAAAA C     EEEE        RRRR  O   O C     KKK   SSSSS"
+             "    S P     A   A C     E           R   R O   O C     K  K      S"
+             "SSSS  P     A   A  CCCC EEEEE       R   R  OOO   CCCC K   K SSSS "
+             "                                                                 "
+             "            M  u  h  a  m  m  a  d   M  o  n  e  i  b            ")
 line="${splashLines[0]}"
 splashX=$(( numOfCols/2-$(( ${#line}/2 )) ))
 for (( i=0; i<${#splashLines[@]}; i++ )); do
@@ -87,13 +88,14 @@ while true; do
   [ $(( y+3 )) -ge $(( numOfLines)) ] && y=$(( y-2 ))
   ## Dynamics of Plane Layer
   # Plane is injected on top of the background through a new layer using a predefined equation with position variables. Shape is hard-coded for performance reasons.
+  # TODO y and x at the center of the plane.
   planeGrid=($(( y*numOfCols+x+3 )) $(( (y+1)*numOfCols+x+2 )) $(( (y+1)*numOfCols+x+3 )) $(( (y+1)*numOfCols+x+4 )) $(( (y+2)*numOfCols+x )) $(( (y+2)*numOfCols+x+1 )) $(( (y+2)*numOfCols+x+3 )) $(( (y+2)*numOfCols+x+5 )) $(( (y+2)*numOfCols+x+6 )) $(( (y+3)*numOfCols+x+1)) $(( (y+3)*numOfCols+x+3)) $(( (y+3)*numOfCols+x+5 )) )
   ## Merging of Layers
   # A new layer is needed to avoid mixing up the top layer (plane) in the dynamic of the background layer with the next iteration.
   allGrid="$backGrid" 
   for (( a=0; a<${#planeGrid[@]}; a++ )); do
     ## Collision Rules
-    [ "${backGrid:${planeGrid[$a]}:1}" == "$rockChar" ] && printf "\a" && exit # Faster check of collision rules while merging the layers.
+    [ "${backGrid:${planeGrid[$a]}:1}" == "$rockChar" ] && printf "\a" && sleep 1 && printf "\a" && sleep 1 && printf "\a" && sleep 1 && exit # Faster check of collision rules while merging the layers.
     ## Rendering of Plane Layer
     allGrid=${allGrid:0:${planeGrid[$a]}}"$planeChar"${allGrid:$(( ${planeGrid[$a]}+1 ))}
   done
@@ -102,7 +104,7 @@ while true; do
   for (( i=${#statistics}; i<$((numOfCols-2)); i++ )); do
     statistics+=" "
   done
-  tput cup 0 0 # Can also be tput cuo 0 0 to write over the previous frame.
+  tput cup 0 0 # Write over the previous frame, faster than tput reset.
   echo -e "$allGrid$statistics" # Can be commented out for debugging. Echo seems faster than printf.
   # Clock
   iteration=$(( iteration+1 ))
