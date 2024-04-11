@@ -16,19 +16,19 @@ function initialize {
   # System Configuration
   stty -echoctl   # Prevent echoing control characters. Mainly when reading is done, pressing arrows would print control.
   # User Configuration
-  difficulty=1 # From 1 to 5
+  difficulty=5 # From 1 to 5
   # Configuration Validation
   # Internal Configuration
   numOfLines=$(( $(tput lines)-1 )) # Leaving last line for statistics.
   numOfCols=$(tput cols)
   numOfPixels=$(( numOfLines*numOfCols )) # Word 'pixel' is used liberally here.
-  clockSpeed="$(echo "scale=1;1-($(( ($difficulty-1)*2 ))/10)"|bc -l)"|sed "s/^\./\0/g" # Internal difficulty.
+  clockSpeed="$(echo "scale=2;(1-($(( (difficulty-1)*2 ))/10))/10"|bc -l|sed "s/^\./0\./g")" # Internal difficulty.
   linesBetweenNumbers=5
   y=$(( $numOfLines-10 )) # Start at lower part vertically.
   x=$(( $numOfCols/2 )) # Start at center horizontally.
   iteration=0
   score=0 # Needed if the score is not the time.
-useEven=false
+frame=0
   # Objects Definition
   balloonChar="|"
   basketChar="#"
@@ -95,39 +95,54 @@ function engine {
     [ $(( x-4 )) -lt 0 ] && x=$(( x+2 ))
     [ $(( y+4 )) -ge $(( numOfLines)) ] && y=$(( y-2 ))
     # ForegroundLayer
-    balloonGridEven=($(( y*numOfCols+x )) $(( y*numOfCols+x+1 )) $(( y*numOfCols+x+2 )) $(( y*numOfCols+x+3 )) $(( y*numOfCols+x-1 )) $(( y*numOfCols+x-2 )) $(( y*numOfCols+x-3 ))
+    function frame0 {
+      balloonGrid=($(( y*numOfCols+x )) $(( y*numOfCols+x+1 )) $(( y*numOfCols+x+2 )) $(( y*numOfCols+x+3 )) $(( y*numOfCols+x-1 )) $(( y*numOfCols+x-2 )) $(( y*numOfCols+x-3 ))
+$(( (y-1)*numOfCols+x )) $(( (y-1)*numOfCols+x+1 )) $(( (y-1)*numOfCols+x+2 )) $(( (y-1)*numOfCols+x+3 )) $(( (y-1)*numOfCols+x+4 )) $(( (y-1)*numOfCols+x-1 )) $(( (y-1)*numOfCols+x-2 )) $(( (y-1)*numOfCols+x-3 )) $(( (y-1)*numOfCols+x-4 ))
+$(( (y-2)*numOfCols+x )) $(( (y-2)*numOfCols+x+1 )) $(( (y-2)*numOfCols+x+2 )) $(( (y-2)*numOfCols+x+3 )) $(( (y-2)*numOfCols+x+4 )) $(( (y-2)*numOfCols+x-1 )) $(( (y-2)*numOfCols+x-2 )) $(( (y-2)*numOfCols+x-3 )) $(( (y-2)*numOfCols+x-4 ))
+$(( (y-3)*numOfCols+x )) $(( (y-3)*numOfCols+x+1 )) $(( (y-3)*numOfCols+x+2 )) $(( (y-3)*numOfCols+x-1 )) $(( (y-3)*numOfCols+x-2 )) $(( (y-3)*numOfCols+x-3 )) $(( (y-3)*numOfCols+x-4 ))
+$(( (y-4)*numOfCols+x )) $(( (y-4)*numOfCols+x-1 )) $(( (y-4)*numOfCols+x-2 ))
+$(( (y+1)*numOfCols+x )) $(( (y+1)*numOfCols+x+1 )) $(( (y+1)*numOfCols+x+2 )) $(( (y+1)*numOfCols+x+3 )) $(( (y+1)*numOfCols+x-1 ))
+)
+      basketGrid=($(( (y+2)*numOfCols+x+2 )) $(( (y+2)*numOfCols+x ))
+$(( (y+3)*numOfCols+x )) $(( (y+3)*numOfCols+x+1 )) $(( (y+3)*numOfCols+x+2 )) $(( (y+3)*numOfCols+x+3 ))
+$(( (y+4)*numOfCols+x+1 )) $(( (y+4)*numOfCols+x+2 ))
+)
+    }
+    function frame1 {
+      balloonGrid=($(( y*numOfCols+x )) $(( y*numOfCols+x+1 )) $(( y*numOfCols+x+2 )) $(( y*numOfCols+x+3 )) $(( y*numOfCols+x-1 )) $(( y*numOfCols+x-2 )) $(( y*numOfCols+x-3 ))
 $(( (y-1)*numOfCols+x )) $(( (y-1)*numOfCols+x+1 )) $(( (y-1)*numOfCols+x+2 )) $(( (y-1)*numOfCols+x+3 )) $(( (y-1)*numOfCols+x+4 )) $(( (y-1)*numOfCols+x-1 )) $(( (y-1)*numOfCols+x-2 )) $(( (y-1)*numOfCols+x-3 )) $(( (y-1)*numOfCols+x-4 ))
 $(( (y-2)*numOfCols+x )) $(( (y-2)*numOfCols+x+1 )) $(( (y-2)*numOfCols+x+2 )) $(( (y-2)*numOfCols+x+3 )) $(( (y-2)*numOfCols+x+4 )) $(( (y-2)*numOfCols+x-1 )) $(( (y-2)*numOfCols+x-2 )) $(( (y-2)*numOfCols+x-3 )) $(( (y-2)*numOfCols+x-4 ))
 $(( (y-3)*numOfCols+x )) $(( (y-3)*numOfCols+x+1 )) $(( (y-3)*numOfCols+x+2 )) $(( (y-3)*numOfCols+x+3 )) $(( (y-3)*numOfCols+x-1 )) $(( (y-3)*numOfCols+x-2 )) $(( (y-3)*numOfCols+x-3 ))
 $(( (y-4)*numOfCols+x )) $(( (y-4)*numOfCols+x+1 )) $(( (y-4)*numOfCols+x-1 ))
 $(( (y+1)*numOfCols+x )) $(( (y+1)*numOfCols+x+1 )) $(( (y+1)*numOfCols+x+2 )) $(( (y+1)*numOfCols+x-1 )) $(( (y+1)*numOfCols+x-2 ))
 )
-    balloonGridOdd=($(( y*numOfCols+x )) $(( y*numOfCols+x+1 )) $(( y*numOfCols+x+2 )) $(( y*numOfCols+x+3 )) $(( y*numOfCols+x-1 )) $(( y*numOfCols+x-2 )) $(( y*numOfCols+x-3 ))
-$(( (y-1)*numOfCols+x )) $(( (y-1)*numOfCols+x+1 )) $(( (y-1)*numOfCols+x+2 )) $(( (y-1)*numOfCols+x+3 )) $(( (y-1)*numOfCols+x+4 )) $(( (y-1)*numOfCols+x-1 )) $(( (y-1)*numOfCols+x-2 )) $(( (y-1)*numOfCols+x-3 )) $(( (y-1)*numOfCols+x-4 ))
-$(( (y-2)*numOfCols+x )) $(( (y-2)*numOfCols+x+1 )) $(( (y-2)*numOfCols+x+2 )) $(( (y-2)*numOfCols+x+3 )) $(( (y-2)*numOfCols+x+4 )) $(( (y-2)*numOfCols+x-1 )) $(( (y-2)*numOfCols+x-2 )) $(( (y-2)*numOfCols+x-3 )) $(( (y-2)*numOfCols+x-4 ))
-$(( (y-3)*numOfCols+x )) $(( (y-3)*numOfCols+x+1 )) $(( (y-3)*numOfCols+x+2 )) $(( (y-3)*numOfCols+x+3 )) $(( (y-3)*numOfCols+x-1 )) $(( (y-3)*numOfCols+x-2 )) $(( (y-3)*numOfCols+x-3 ))
-$(( (y-4)*numOfCols+x )) $(( (y-4)*numOfCols+x+1 )) $(( (y-4)*numOfCols+x-1 ))
-$(( (y+1)*numOfCols+x )) $(( (y+1)*numOfCols+x+1 )) $(( (y+1)*numOfCols+x-1 )) 
-)
-    basketGrid=($(( (y+2)*numOfCols+x+1 )) $(( (y+2)*numOfCols+x-1 ))
+      basketGrid=($(( (y+2)*numOfCols+x+1 )) $(( (y+2)*numOfCols+x-1 ))
 $(( (y+3)*numOfCols+x )) $(( (y+3)*numOfCols+x+1 )) $(( (y+3)*numOfCols+x-1 ))
 $(( (y+4)*numOfCols+x )) $(( (y+4)*numOfCols+x+1 )) $(( (y+4)*numOfCols+x-1 ))
 )
-    if [ $(( iteration%10 )) -eq 0 ]; then # Rotating frames for object animation.
-      if [ "$useEven" == "true" ]; then
-        useEven="false" 
-      else
-        useEven="true"
-      fi
-    fi
+    }
+    function frame2 {
+      balloonGrid=($(( y*numOfCols+x )) $(( y*numOfCols+x+1 )) $(( y*numOfCols+x+2 )) $(( y*numOfCols+x+3 )) $(( y*numOfCols+x-1 )) $(( y*numOfCols+x-2 )) $(( y*numOfCols+x-3 ))
+$(( (y-1)*numOfCols+x )) $(( (y-1)*numOfCols+x+1 )) $(( (y-1)*numOfCols+x+2 )) $(( (y-1)*numOfCols+x+3 )) $(( (y-1)*numOfCols+x+4 )) $(( (y-1)*numOfCols+x-1 )) $(( (y-1)*numOfCols+x-2 )) $(( (y-1)*numOfCols+x-3 )) $(( (y-1)*numOfCols+x-4 ))
+$(( (y-2)*numOfCols+x )) $(( (y-2)*numOfCols+x+1 )) $(( (y-2)*numOfCols+x+2 )) $(( (y-2)*numOfCols+x+3 )) $(( (y-2)*numOfCols+x+4 )) $(( (y-2)*numOfCols+x-1 )) $(( (y-2)*numOfCols+x-2 )) $(( (y-2)*numOfCols+x-3 )) $(( (y-2)*numOfCols+x-4 ))
+$(( (y-3)*numOfCols+x )) $(( (y-3)*numOfCols+x-1 )) $(( (y-3)*numOfCols+x-2 )) $(( (y-3)*numOfCols+x+1 )) $(( (y-3)*numOfCols+x+2 )) $(( (y-3)*numOfCols+x+3 )) $(( (y-3)*numOfCols+x+4 ))
+$(( (y-4)*numOfCols+x )) $(( (y-4)*numOfCols+x+1 )) $(( (y-4)*numOfCols+x+2 ))
+$(( (y+1)*numOfCols+x )) $(( (y+1)*numOfCols+x-1 )) $(( (y+1)*numOfCols+x-2 )) $(( (y+1)*numOfCols+x-3 )) $(( (y+1)*numOfCols+x+1 ))
+)
+      basketGrid=($(( (y+2)*numOfCols+x )) $(( (y+2)*numOfCols+x-2 ))
+$(( (y+3)*numOfCols+x )) $(( (y+3)*numOfCols+x-1 )) $(( (y+3)*numOfCols+x-2 )) $(( (y+3)*numOfCols+x-3 ))
+$(( (y+4)*numOfCols+x-1 )) $(( (y+4)*numOfCols+x-2 ))
+)
+    }
+    function frame3 { # To close the loop. 
+      frame1 
+    }
+    [ $((iteration&15)) -eq 0 ] && frame=$(( (frame+1)%4 ))
+    frame$frame # Polymorphism through functional reference.
     # Merge of State + Collision Rules
     allGrid="$backGrid" # A new layer is needed to avoid mixing up the top layer in the dynamic of the background layer with the next iteration.
-    for (( a=0; a<${#balloonGridEven[@]}; a++ )); do
-      if [ "$useEven" == "true" ]; then
-        allGrid=${allGrid:0:${balloonGridEven[$a]}}"$balloonChar"${allGrid:$(( ${balloonGridEven[$a]}+1 ))}
-      else
-        allGrid=${allGrid:0:${balloonGridOdd[$a]}}"$balloonChar"${allGrid:$(( ${balloonGridOdd[$a]}+1 ))}
-      fi
+    for (( a=0; a<${#balloonGrid[@]}; a++ )); do
+      allGrid=${allGrid:0:${balloonGrid[$a]}}"$balloonChar"${allGrid:$(( ${balloonGrid[$a]}+1 ))}
     done
     for (( a=0; a<${#basketGrid[@]}; a++ )); do
       backGridChar="${backGrid:${basketGrid[$a]}:1}"
@@ -142,15 +157,53 @@ $(( (y+4)*numOfCols+x )) $(( (y+4)*numOfCols+x+1 )) $(( (y+4)*numOfCols+x-1 ))
     tput cup 0 0 # Write over the previous frame, faster than tput reset.
     echo -e "$allGrid$statistics" # Can be commented out for debugging. Echo seems faster than printf.
     # Clock + User Interaction
+    function up {
+      y=$((y-2))
+    }
+    function left {
+      x=$((x-2))
+    }
+    function down {
+      y=$((y+2))
+    }
+    function right {
+      x=$((x+2))
+    }
+    function upLeft {
+      up
+      left
+    }
+    function upRight {
+      up
+      right
+    }
+    function downLeft {
+      down
+      left
+    }
+    function downRight {
+      down
+      right
+    }
     iteration=$(( iteration+1 ))
-    read -sn 3 -t 0.02 inp # Clocking integrated in read command.
+    read -sn 6 -t $clockSpeed inp # Clocking integrated in read command.
     case $inp in
-      $'\033[A') y=$((y-2)) ;; # Up
-      $'\033[D') x=$((x-2)) ;; # Left
-      $'\033[B') y=$((y+2)) ;; # Down
-      $'\033[C') x=$((x+2)) ;; # Right
-      *) continue;;
+      $'\033[A') move="up" ;; # Up
+      $'\033[D') move="left" ;; # Left
+      $'\033[B') move="down" ;; # Down
+      $'\033[C') move="right" ;; # Right
+      $'\033[A\033[D') move="upLeft" ;;
+      $'\033[D\033[A') move="upLeft" ;;
+      $'\033[A\033[C') move="upRight" ;;
+      $'\033[C\033[A') move="upRight" ;;
+      $'\033[B\033[D') move="downLeft" ;;
+      $'\033[D\033[B') move="downLeft" ;;
+      $'\033[B\033[C') move="downRight" ;;
+      $'\033[C\033[B') move="downRight" ;;
+      *) move="$execMove" ;; # Needed to get the move from the previous iteration.
     esac
+    execMove="$move" # Without this, somehow, move doesn't survive to the next iteration.
+    $execMove # Polymorphism through functional calls.
   done
 }
 
