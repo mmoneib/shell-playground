@@ -1,43 +1,36 @@
 #!/bin/sh
 ################################################################################
-# Numbers Balloo                                                               #
+# ~game_title_here~                                                            #
 #                                                                              #
-# A vintage, arcade game of hot air balloon trying to catch numbers without    #
-# smashing into birds.                                                         #
+# ~game_description_here!                                                      #
 #                                                                              #
 # Conceptualized and Developed by: Muhammad Moneib                             #
 ################################################################################
 
-#TODO Fix balloon interaction with statistics line.
-#TODO Add input options.
-
 function initialize {
   # System Configuration
   stty -echoctl   # Prevent echoing control characters. Mainly when reading is done, pressing arrows would print control.
+  ~more_system_configuration_here~
   # User Configuration
   difficulty=5 # From 1 to 5
+  ~more_user_configuration_here~
   # Configuration Validation
+  ~configuration_validation_here~
   # Internal Configuration
   numOfLines=$(( $(tput lines)-1 )) # Leaving last line for statistics.
   numOfCols=$(tput cols)
   numOfPixels=$(( numOfLines*numOfCols )) # Word 'pixel' is used liberally here.
-  clockSpeed="$(echo "scale=2;(1-($(( (difficulty-1)*2 ))/10))/10"|bc -l|sed "s/^\./0\./g")" # Internal difficulty.
-  linesBetweenNumbers=5
-  y=$(( $numOfLines-10 )) # Start at lower part vertically.
-  x=$(( $numOfCols/2 )) # Start at center horizontally.	
+  clockSpeed=~speed_of_reading_input_here~
+  ~difficulty_related_settings_here~
+  y=~vertical_starting_position_of_cursor_here~
+  x=~horizontal_starting_position_of_cursor_here~
   iteration=0
   score=0 # Needed if the score is not the time.
-  iterationsPerFrame=8
-  frame=0
+  ~object_animation_frame_configuration_here~
   # Objects Definition
-  balloonChar="|"
-  basketChar="#"
-  spaceChar=" "
-  numbers=(1 2 3 4 5 6 7 8 9 "X")
-  numbersSize=${#numbers[@]}
-  staticStatistics="Numbers Balloon by Muhammad Moneib - Difficulty: $difficulty - Score: "
-  ballonGrid=() # Contains the positions forming the plane layer to be applied over the background grid.
-  basketGrid=()
+  ~objects_characters_definitions_here~
+  staticStatistics=~game_title_here~" by Muhammad Moneib - Width: $numOfCols - Height: $numOfLines - Difficulty: $difficulty - Score: "
+  ~object_grid_initialization_here~
   backGrid="" # As a string for faster printing. Here is where background element (like rocks) will lie.
   for (( p=0; p<$numOfPixels; p++ )); do
     backGrid+=" " # Start with a blank background grid.
@@ -55,13 +48,7 @@ G   G A   A M   M E           O   O  V V  E     R   R
   }
   trap exitFunc EXIT
   # Splash Screen
-  splashLines=("N   N U   U MM MM BBBB  EEEEE RRRR   SSSS       BBBB   AAA  L     L      OOO   OOO  N   N"
-               "NN  N U   U M M M B   B E     R   R S           B   B A   A L     L     O   O O   O NN  N"
-               "N N N U   U M M M BBBB  EEEE  RRRR  SSSSS       BBBB  AAAAA L     L     O   O O   O N N N"
-               "N  NN U   U M   M B   B E     R   R     S       B   B A   A L     L     O   O O   O N  NN"
-               "N   N  UUU  M   M BBBB  EEEEE R   R SSSS        BBBB  A   A LLLLL LLLLL  OOO   OOO  N   N"
-               "                                                                                         "
-               "                        M  u  h  a  m  m  a  d   M  o  n  e  i  b                        ")
+  splashLines=~array_of_lines_of_splash_title_here~
   line="${splashLines[0]}"
   splashX=$(( numOfCols/2-$(( ${#line}/2 )) ))  # Horizontal centering for top-scrolling games.
   for (( i=0; i<${#splashLines[@]}; i++ )); do
