@@ -1,22 +1,22 @@
 #!/bin/bash
 ################################################################################
-# Turned-Based Game Engine
-#
-# A backend endgine which facilitates developing turn-based games using Bash.
-# The engine allows rapid development of new games by allowing the developer
-# to focus on the development of the game's display, the conditions for moves,
-# the conditions for winning or losing, and the heuristics which define the 
-# strategy and artificial intelligence of the computer openent.
-# The engine allows an indefinte number of plauyers of any combination of
-# humans or computers. The AI is applied using a single level of heuristics
-# *mainly for performance reasons, so there's only a single level depth search
-# in the state tree. Minimax can be simulated using negative heuristics for
-# a defensive strategy. The menus of the game along with the desired actions
-# is also fully customizable.
-# This script is not meant to be used on its own as it's only meant to be 
-# sourced by other game-implementing script.
-#
-# Developer: Muhammad Moneib
+# Turned-Based Game Engine                                                     #
+#                                                                              #
+# A backend endgine which facilitates developing turn-based games using Bash.  #
+# The engine allows rapid development of new games by allowing the developer   #
+# to focus on the development of the game's display, the conditions for moves, #
+# the conditions for winning or losing, and the heuristics which define the    #
+# strategy and artificial intelligence of the computer openent.                #
+# The engine allows an indefinte number of plauyers of any combination of      #
+# humans or computers. The AI is applied using a single level of heuristics    #
+# *mainly for performance reasons, so there's only a single level depth search #
+# in the state tree. Minimax can be simulated using negative heuristics for    #
+# a defensive strategy. The menus of the game along with the desired actions   #
+# is also fully customizable.                                                  #
+# This script is not meant to be used on its own as it's only meant to be      #
+# sourced by other game-implementing script.                                   #
+#                                                                              #
+# Developer: Muhammad Moneib                                                   #
 ################################################################################
 
 #TODO Add description comments for each variable.

@@ -1,11 +1,11 @@
 #!/bin/bash
 ################################################################################
-# Connect 4 for Bash
-#
-# The classic turn-based, 2-players game of connecting 4 tiles of the player
-# consecutively, either horizontlaly, vertically, or diagonally.
-#
-# Developer: Muhammad Moneib
+# Connect 4                                                                    #
+#                                                                              #
+# The classic turn-based, 2-players game of connecting 4 tiles of the player   #
+# consecutively, either horizontlaly, vertically, or diagonally.               #
+#                                                                              #
+# Developer: Muhammad Moneib                                                   #
 ################################################################################
 
 source turn_based__sourced.sh;
