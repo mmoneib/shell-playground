@@ -1,11 +1,12 @@
 #!/bin/sh
 ################################################################################
-# ~game_title_here~                                                            #
+# Snake                                                                        #
 #                                                                              #
-# ~game_description_here!                                                      #
+# A clone of the classic game of NOKIA fame.                                   #
 #                                                                              #
-# Conceptualized and Developed by: Muhammad Moneib                             #
+# Developed by: Muhammad Moneib                                                #
 ################################################################################
+#TODO Use arcade__actions better than template?
 
 function initialize {
   # System Configuration
@@ -13,24 +14,22 @@ function initialize {
   ~more_system_configuration_here~
   # User Configuration
   difficulty=5 # From 1 to 5
-  ~more_user_configuration_here~
   # Configuration Validation
-  ~configuration_validation_here~
   # Internal Configuration
   numOfLines=$(( $(tput lines)-1 )) # Leaving last line for statistics.
   numOfCols=$(tput cols)
   numOfPixels=$(( numOfLines*numOfCols )) # Word 'pixel' is used liberally here.
-  clockSpeed=~speed_of_reading_input_here~
-  ~difficulty_related_settings_here~
-  y=~vertical_starting_position_of_cursor_here~
-  x=~horizontal_starting_position_of_cursor_here~
+  clockSpeed="$(echo "scale=2;(1-($(( (difficulty-1)*2 ))/10))/10"|bc -l|sed "s/^\./0\./g")" # Internal difficulty.
+  y=$(( $numOfLines-10 )) # Start at lower part vertically.
+  x=$(( $numOfCols/2 )) # Start at center horizontally.	
   iteration=0
   score=0 # Needed if the score is not the time.
-  ~object_animation_frame_configuration_here~
+  #~object_animation_frame_configuration_here~
   # Objects Definition
-  ~objects_characters_definitions_here~
-  staticStatistics=~game_title_here~" by Muhammad Moneib - Width: $numOfCols - Height: $numOfLines - Difficulty: $difficulty - Score: "
-  ~object_grid_initialization_here~
+  snakeChar="X"
+  foodChar="O"
+  staticStatistics="Snake"" by Muhammad Moneib - Width: $numOfCols - Height: $numOfLines - Difficulty: $difficulty - Score: "
+  snakeGrid=()
   backGrid="" # As a string for faster printing. Here is where background element (like rocks) will lie.
   for (( p=0; p<$numOfPixels; p++ )); do
     backGrid+=" " # Start with a blank background grid.
@@ -48,7 +47,13 @@ G   G A   A M   M E           O   O  V V  E     R   R
   }
   trap exitFunc EXIT
   # Splash Screen
-  splashLines=~array_of_lines_of_splash_title_here~
+  splashLines=("       SSSS N   N  AAA  K   K EEEEE      "
+               "      S     NN  N A   A K  K  E          "
+               "      SSSSS N N N AAAAA KKK   EEEE       "
+               "          S N  NN A   A K  K  E          "
+               "      SSSS  N   N A   A K   K EEEEE      "
+               "                                         "
+               "M  u  h  a  m  m  a  d   M  o  n  e  i  b")
   line="${splashLines[0]}"
   splashX=$(( numOfCols/2-$(( ${#line}/2 )) ))  # Horizontal centering for top-scrolling games.
   for (( i=0; i<${#splashLines[@]}; i++ )); do
@@ -61,11 +66,8 @@ G   G A   A M   M E           O   O  V V  E     R   R
 function engine {
   while true; do
     # Background Layer
-    newElementOrLine=~element_initial_representation_here~
-    if [ ~condition_to_add_element_here~ ]; then
-      ~logic_to_form_background_elements_here~
-    fi
-    newElementOrLineIndex=~element_first_char_index_here~
+    newElementOrLine="$foodChar"
+    newElementOrLineIndex=$(( RANDOM%$numOfPixels )) # Random placement of food.
     backGrid="${backGrid:0:newElementOrLineIndex}$newElementOrLine$backGrid:$(( $newElementOrLineIndex+${#newElementOrLine}  ))" # Add new element to the background grid.
     backGrid="${backGrid:0:$numOfPixels}" # Trim the extra line at the bottom.
     # Boundary Rules
@@ -150,22 +152,6 @@ $(( (y+4)*numOfCols+x-1 )) $(( (y+4)*numOfCols+x-2 ))
     function right {
       x=$(( x+4 )) # More than the vertical displacement due to landscape frame. Displacement is used instead of a logical grid.
     }
-    function upLeft {
-      up
-      left
-    }
-    function upRight {
-      up
-      right
-    }
-    function downLeft {
-      down
-      left
-    }
-    function downRight {
-      down
-      right
-    }
     iteration=$(( iteration+1 ))
     read -sn 6 -t $clockSpeed inp # Clocking integrated in read command. 6 is to read 2 buttons.
     case $inp in
@@ -173,14 +159,6 @@ $(( (y+4)*numOfCols+x-1 )) $(( (y+4)*numOfCols+x-2 ))
       $'\033[D') move="left" ;; # Left
       $'\033[B') move="down" ;; # Down
       $'\033[C') move="right" ;; # Right
-      $'\033[A\033[D') move="upLeft" ;;
-      $'\033[D\033[A') move="upLeft" ;;
-      $'\033[A\033[C') move="upRight" ;;
-      $'\033[C\033[A') move="upRight" ;;
-      $'\033[B\033[D') move="downLeft" ;;
-      $'\033[D\033[B') move="downLeft" ;;
-      $'\033[B\033[C') move="downRight" ;;
-      $'\033[C\033[B') move="downRight" ;;
       *) move="$execMove" ;; # Needed to get the move from the previous iteration, for inertia.
     esac
     execMove="$move" # Without this, somehow, move doesn't survive to the next iteration.

@@ -75,7 +75,7 @@ function engine {
   while true; do
     # Background Layer
     newLineUp=""
-    if [ $(( iteration%$(( linesBetweenNumberss+1 )) )) -eq 0 ]; then
+    if [ $(( iteration%$(( linesBetweenNumbers+1 )) )) -eq 0 ]; then
       numberPositionInLine=$(( RANDOM%numOfCols )) # Random position for the number.
       # Static concatination with the 2 for loops is faster than successive string replacement, which is not needed as we won't have more than one number per line.
       for (( p=0; p<$(( numberPositionInLine-1 )); p++ )); do
