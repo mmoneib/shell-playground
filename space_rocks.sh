@@ -6,17 +6,34 @@
 #                                                                              #
 # Conceptualized and Developed by: Muhammad Moneib                             #
 ################################################################################
+# TODO Allow skipping screen size validation so that bigger screens than the emulated (GUI) one is allowed.
+# TODO Add validation for minimum size of screen.
 
 function initialize {
   # INITIALIZATION
   ## System Configuration
   stty -echoctl # Prevent echoing control characters. Mainly when reading is done, pressing arrows woulf print control.
+  sysNumOfLines=$(tput lines)
+  sysNumOfCols=$(tput cols)
   ## User Configuration
   difficulty=5 # From 1 to 5
+  numOfLines=$(( $sysNumOfLines-1 )) # Leaving last line for statistics.
+  numOfCols=$sysNumOfCols
+  while getopts "d:H:W:h" o; do
+    case "$o" in
+    d) difficulty=$OPTARG ;;
+    H) numOfLines=$OPTARG ;;
+    W) numOfCols=$OPTARG ;;
+    h) echo "Usage: $0 [ -d difficulty_here -h]" && exit ;;
+    esac
+  done
   # Configuration Validation
+  [ $difficulty -lt 1 ] || [ $difficulty -gt 5 ] && echo "ERROR: The parameter 'd' must be set between 1 and 5, inclusive." && exit 1
+  [ $numOfLines -gt $(( $sysNumOfLines-1 )) ] && echo "ERROR: The parameter 'H' must be set less than $(( $sysNumOfLines-1 ))." && exit 1
+  [ $numOfCols -gt $sysNumOfCols ] && echo "ERROR: The parameter 'W' must be set less than $sysNumOfCols." && exit 1
   # Internal Configuration
-  numOfLines=$(( $(tput lines)-1 )) # Leaving last line for statistics.
-  numOfCols=$(tput cols)
+  stty columns $numOfCols && stty rows $numOfLines # Configuration of screen size for a non-GUI terminal emulator.
+  printf '\033[8;'$numOfLines';'$numOfCols't' # Configuration of screen size for a GUI terminal emulator.
   numOfPixels=$(( numOfLines*numOfCols )) # Word 'pixel' is used liberally here.
   clockSpeed="$(echo "scale=2;(1-($(( (difficulty-1)*2 ))/10))/10/2+0.01"|bc -l|sed "s/^\./0\./g")" # Internal difficulty.
   linesBetweenRocks=$(( 5-difficulty )) # Configurable as an indicator of difficulty.
@@ -45,6 +62,8 @@ G   G A   A M   M E           O   O  V V  E     R   R
  GGG  A   A M   M EEEEE        OOO    V   EEEEE R   R
 "
     echo "$statistics"
+    stty columns $sysNumOfCols && stty rows $sysNumOfLines # Reversal of configuration of screen size for a non-GUI terminal emulator.
+    printf '\e[8;'$sysNumOfLines';'$sysNumOfCols't' # Reversal of onfiguration of screen size for a GUI terminal emulator.
   }
   trap exitFunc EXIT # TODO Escape errors from trap.
   # Splash Screen
@@ -140,5 +159,5 @@ function engine {
   done
 }
 
-initialize
+initialize $@
 engine
