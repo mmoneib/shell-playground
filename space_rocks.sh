@@ -7,7 +7,6 @@
 # Conceptualized and Developed by: Muhammad Moneib                             #
 ################################################################################
 # TODO Allow skipping screen size validation so that bigger screens than the emulated (GUI) one is allowed.
-# TODO Add validation for minimum size of screen.
 
 function initialize {
   # INITIALIZATION
@@ -29,6 +28,8 @@ function initialize {
   done
   # Configuration Validation
   [ $difficulty -lt 1 ] || [ $difficulty -gt 5 ] && echo "ERROR: The parameter 'd' must be set between 1 and 5, inclusive." && exit 1
+  [ $sysNumOfLines -lt 40 ] && echo "ERROR: The width of the screen must be at least 40 columns." && exit 1
+  [ $sysNumOfCols -lt 80 ]  && echo "ERROR: The height of the screen must be at least 80 rows." && exit 1
   [ $numOfLines -gt $(( $sysNumOfLines-1 )) ] && echo "ERROR: The parameter 'H' must be set less than $(( $sysNumOfLines-1 ))." && exit 1
   [ $numOfCols -gt $sysNumOfCols ] && echo "ERROR: The parameter 'W' must be set less than $sysNumOfCols." && exit 1
   # Internal Configuration
