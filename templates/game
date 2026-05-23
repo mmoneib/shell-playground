@@ -9,16 +9,25 @@
 
 function initialize {
   # System Configuration
-  stty -echoctl   # Prevent echoing control characters. Mainly when reading is done, pressing arrows would print control.
+  stty -echoctl # Prevent echoing control characters. Mainly when reading is done, pressing arrows woulf print control.
+  sysNumOfLines=$(tput lines)
+  sysNumOfCols=$(tput cols)
   ~more_system_configuration_here~
   # User Configuration
   difficulty=5 # From 1 to 5
+  numOfLines=$(( $sysNumOfLines-1 )) # Leaving last line for statistics.
+  numOfCols=$sysNumOfCols
   ~more_user_configuration_here~
   # Configuration Validation
-  ~configuration_validation_here~
+  [ $difficulty -lt 1 ] || [ $difficulty -gt 5 ] && echo "ERROR: The parameter 'd' must be set between 1 and 5, inclusive." && exit 1
+  [ $sysNumOfLines -lt 40 ] && echo "ERROR: The width of the screen must be at least 40 columns." && exit 1
+  [ $sysNumOfCols -lt 80 ]  && echo "ERROR: The height of the screen must be at least 80 rows." && exit 1
+  [ $numOfLines -gt $(( $sysNumOfLines-1 )) ] && echo "ERROR: The parameter 'H' must be set less than $(( $sysNumOfLines-1 ))." && exit 1
+  [ $numOfCols -gt $sysNumOfCols ] && echo "ERROR: The parameter 'W' must be set less than $sysNumOfCols." && exit 1
+  ~more_configuration_validation_here~
   # Internal Configuration
-  numOfLines=$(( $(tput lines)-1 )) # Leaving last line for statistics.
-  numOfCols=$(tput cols)
+  stty columns $numOfCols && stty rows $numOfLines # Configuration of screen size for a non-GUI terminal emulator.
+  printf '\033[8;'$numOfLines';'$numOfCols't' # Configuration of screen size for a GUI terminal emulator.
   numOfPixels=$(( numOfLines*numOfCols )) # Word 'pixel' is used liberally here.
   clockSpeed=~speed_of_reading_input_here~
   ~difficulty_related_settings_here~
@@ -43,8 +52,11 @@ function initialize {
 G     A   A M M M E           O   O V   V E     R   R
 G GGG AAAAA M M M EEEE        O   O V   V EEEE  RRRR 
 G   G A   A M   M E           O   O  V V  E     R   R
- GGG  A   A M   M EEEEE        OOO    V   EEEEE R   R"
+ GGG  A   A M   M EEEEE        OOO    V   EEEEE R   R
+"
     echo "$statistics" # Calculated by the engine.
+    stty columns $sysNumOfCols && stty rows $sysNumOfLines # Reversal of configuration of screen size for a non-GUI terminal emulator.
+    printf '\e[8;'$sysNumOfLines';'$sysNumOfCols't' # Reversal of onfiguration of screen size for a GUI terminal emulator.
   }
   trap exitFunc EXIT
   # Splash Screen
@@ -191,5 +203,5 @@ $(( (y+4)*numOfCols+x-1 )) $(( (y+4)*numOfCols+x-2 ))
   done
 }
 
-initialize
+initialize $@
 engine

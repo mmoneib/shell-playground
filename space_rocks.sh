@@ -9,12 +9,11 @@
 # TODO Allow skipping screen size validation so that bigger screens than the emulated (GUI) one is allowed.
 
 function initialize {
-  # INITIALIZATION
-  ## System Configuration
+  # System Configuration
   stty -echoctl # Prevent echoing control characters. Mainly when reading is done, pressing arrows woulf print control.
   sysNumOfLines=$(tput lines)
   sysNumOfCols=$(tput cols)
-  ## User Configuration
+  # User Configuration
   difficulty=5 # From 1 to 5
   numOfLines=$(( $sysNumOfLines-1 )) # Leaving last line for statistics.
   numOfCols=$sysNumOfCols
@@ -55,6 +54,7 @@ function initialize {
   done
   # Signal Traps
   function exitFunc {
+    [ ! $? -eq 0 ] && echo "Error occured! :-(" && exit 1 # $? has to be in the first line of the function to get the last's exit code.
     tput clear
     echo " GGG   AAA  MM MM EEEEE        OOO  V   V EEEEE RRRR 
 G     A   A M M M E           O   O V   V E     R   R
@@ -62,11 +62,11 @@ G GGG AAAAA M M M EEEE        O   O V   V EEEE  RRRR
 G   G A   A M   M E           O   O  V V  E     R   R
  GGG  A   A M   M EEEEE        OOO    V   EEEEE R   R
 "
-    echo "$statistics"
+    echo "$statistics" # Calculated by the engine.
     stty columns $sysNumOfCols && stty rows $sysNumOfLines # Reversal of configuration of screen size for a non-GUI terminal emulator.
     printf '\e[8;'$sysNumOfLines';'$sysNumOfCols't' # Reversal of onfiguration of screen size for a GUI terminal emulator.
   }
-  trap exitFunc EXIT # TODO Escape errors from trap.
+  trap exitFunc EXIT
   # Splash Screen
   splashLines=(" SSSS PPPP   AAA   CCCC EEEEE       RRRR   OOO   CCCC K   K  SSSS"
              "S     P   P A   A C     E           R   R O   O C     K  K  S    "
